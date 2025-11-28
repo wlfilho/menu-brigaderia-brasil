@@ -1,5 +1,14 @@
-export const fallbackConfigCsv = `Restaurante,CNPJ,Telefone,Whatsapp,Endereço,Bairro,Cidade,Estado,Instagram,Facebook
-Restaurante Lilica,00.000.000/0000-00,(11) 99999-0000,5511999990000,Rua das Flores, 123,Vila Gourmet,São Paulo,SP,https://instagram.com/restaurante.lilica,https://facebook.com/restaurante.lilica`;
+export const fallbackConfigCsv = `Restaurante,Restaurante Lilica
+CNPJ,00.000.000/0000-00
+Telefone,(11) 99999-0000
+Whatsapp,5511999990000
+Endereço,"Rua das Flores, 123"
+Bairro,Vila Gourmet
+Cidade,São Paulo
+Estado,SP
+Instagram,https://instagram.com/restaurante.lilica
+Facebook,https://facebook.com/restaurante.lilica
+Logo,`;
 
 // Fallback para configurações de features (formulario cupom)
 // Por padrão, o formulário de cupom está desabilitado
