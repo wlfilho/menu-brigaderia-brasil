@@ -23,9 +23,16 @@ const defaultDescription =
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteConfig();
   const restaurantName = config.restaurantName || "Menú";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000";
+
+  // Use logo from config or fallback
+  const ogImage = config.logoUrl || "/images/logo-brigaderia.png";
+  const fullOgImageUrl = ogImage.startsWith("http") ? ogImage : `${baseUrl}${ogImage}`;
 
   return {
-    metadataBase: new URL("https://taj-arabe.vercel.app"),
+    metadataBase: new URL(baseUrl),
     title: {
       default: restaurantName,
       template: `%s · ${restaurantName}`,
@@ -46,11 +53,11 @@ export async function generateMetadata(): Promise<Metadata> {
       description: defaultDescription,
       type: "website",
       locale: "es_CO",
-      url: "https://taj-arabe.vercel.app",
+      url: baseUrl,
       siteName: restaurantName,
       images: [
         {
-          url: "/images/logo-tajarabe.png",
+          url: fullOgImageUrl,
           width: 1200,
           height: 630,
           alt: `Menú digital ${restaurantName}`,
@@ -61,10 +68,10 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: restaurantName,
       description: defaultDescription,
-      images: ["/images/logo-tajarabe.png"],
+      images: [fullOgImageUrl],
     },
     icons: {
-      icon: "/favicon.ico",
+      icon: config.logoUrl || "/favicon.ico",
     },
   };
 }
