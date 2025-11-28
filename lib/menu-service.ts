@@ -6,15 +6,18 @@ import type { MenuCategory, MenuData, MenuItem } from "@/types/menu";
 
 const DEFAULT_SHEET_ID = "1HSW04exyEjR9HdYQN5njz0k6Gssxb48l_7HWiPyXw6s";
 const DEFAULT_SHEET_GID = "0";
+const DEFAULT_SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTFeYAo7QKAGm947PC5VAFTxTCuVKPz0UGTcPLNaGzSv4P-vei6QanuNhm-nm2qBU5OaeJF8d3ttrpM/pub?output=csv";
 
 const SHEET_ID =
   process.env.NEXT_PUBLIC_SHEET_ID ?? process.env.SHEET_ID ?? DEFAULT_SHEET_ID;
 const SHEET_GID =
-  process.env.NEXT_PUBLIC_SHEET_GID ?? process.env.SHEET_GID ?? DEFAULT_SHEET_GID;
+  process.env.NEXT_PUBLIC_SHEET_GID ??
+  process.env.SHEET_GID ??
+  DEFAULT_SHEET_GID;
 
 const SHEET_URL =
-  process.env.NEXT_PUBLIC_SHEET_URL ??
-  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${SHEET_GID}`;
+  process.env.NEXT_PUBLIC_SHEET_URL ?? `${DEFAULT_SHEET_URL}&gid=${SHEET_GID}`;
 
 const CACHE_TAG = "menu-data";
 

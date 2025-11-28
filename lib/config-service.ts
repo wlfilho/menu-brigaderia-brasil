@@ -27,7 +27,12 @@ function extractSheetIdFromUrl(url: string): string | null {
   return null;
 }
 
-const PUBLISHED_SHEET_URL = process.env.NEXT_PUBLIC_SHEET_URL ?? process.env.SHEET_URL;
+const DEFAULT_PUBLISHED_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTFeYAo7QKAGm947PC5VAFTxTCuVKPz0UGTcPLNaGzSv4P-vei6QanuNhm-nm2qBU5OaeJF8d3ttrpM/pub?output=csv";
+const PUBLISHED_SHEET_URL =
+  process.env.NEXT_PUBLIC_SHEET_URL ??
+  process.env.SHEET_URL ??
+  DEFAULT_PUBLISHED_URL;
 const EXTRACTED_SHEET_ID = PUBLISHED_SHEET_URL ? extractSheetIdFromUrl(PUBLISHED_SHEET_URL) : null;
 
 const SHEET_ID =
@@ -60,8 +65,7 @@ function buildConfigUrl() {
       // Ensure output is CSV
       url.searchParams.set("output", "csv");
       // Change from /pub to /pub/gviz if needed
-      const modifiedUrl = url.toString().replace("/pub?", "/pub/gviz?");
-      return modifiedUrl;
+      return url.toString();
     } catch (error) {
       console.warn("Failed to build config URL from published sheet", error);
     }
@@ -74,6 +78,20 @@ function buildConfigUrl() {
 const CONFIG_URL = buildConfigUrl();
 
 function buildFeatureConfigUrl() {
+  if (PUBLISHED_SHEET_URL && FEATURE_CONFIG_GID) {
+    try {
+      const url = new URL(PUBLISHED_SHEET_URL);
+      url.searchParams.set("gid", FEATURE_CONFIG_GID);
+      url.searchParams.set("output", "csv");
+      return url.toString();
+    } catch (error) {
+      console.warn(
+        "Failed to build feature config URL from published sheet",
+        error,
+      );
+    }
+  }
+
   return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${FEATURE_CONFIG_GID}`;
 }
 
