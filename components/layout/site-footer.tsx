@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Facebook, Instagram, MapPin, Phone } from "lucide-react";
+import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
 
 import { HoursModal } from "@/components/hours-modal";
 import { getBusinessHours } from "@/lib/hours-service";
@@ -50,6 +50,17 @@ export async function SiteFooter({ config }: SiteFooterProps) {
                     className="transition hover:text-[#b37944]"
                   >
                     {config.phone}
+                  </a>
+                </div>
+              )}
+              {config.email && (
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 flex-shrink-0 text-[#b37944]" />
+                  <a
+                    href={`mailto:${config.email}`}
+                    className="transition hover:text-[#b37944]"
+                  >
+                    {config.email}
                   </a>
                 </div>
               )}
