@@ -1,20 +1,19 @@
 import Link from "next/link";
-import { Facebook, Instagram, MessageCircle } from "lucide-react";
+import { Facebook, Instagram, MapPin, Phone } from "lucide-react";
 
+import { HoursModal } from "@/components/hours-modal";
+import { getBusinessHours } from "@/lib/hours-service";
 import type { SiteConfigWithComputed } from "@/types/config";
 
 interface SiteFooterProps {
   config: SiteConfigWithComputed;
 }
 
-export function SiteFooter({ config }: SiteFooterProps) {
+export async function SiteFooter({ config }: SiteFooterProps) {
   const year = new Date().getFullYear();
+  const hours = await getBusinessHours();
+
   const socials = [
-    {
-      href: config.whatsappLink,
-      label: "WhatsApp",
-      icon: MessageCircle,
-    },
     {
       href: config.instagram,
       label: "Instagram",
@@ -28,28 +27,80 @@ export function SiteFooter({ config }: SiteFooterProps) {
   ].filter((social) => Boolean(social.href));
 
   return (
-    <footer className="border-t border-[#efe3d2] bg-[#f6ecde] py-6 text-sm text-[#9a8263]">
-      <div className="container-responsive flex flex-col gap-4 text-center sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <p className="font-semibold text-[#6d5334]">{config.restaurantName}</p>
-          <p>{config.formattedAddress || "Dirección informada pronto"}</p>
-        </div>
-        <div className="flex flex-col items-center gap-3 sm:items-end">
-          <div className="flex gap-3">
-            {socials.map(({ href, label, icon: Icon }) => (
-              <Link
-                key={label}
-                href={href}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#e7dccd] bg-white text-[#7d6446] shadow-sm transition hover:border-[#d3a06f] hover:text-[#b37944]"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={label}
-              >
-                <Icon className="h-4 w-4" aria-hidden />
-              </Link>
-            ))}
+    <footer className="border-t border-[#efe3d2] bg-gradient-to-b from-[#fdfbf8] to-[#f6ecde] py-12">
+      <div className="container-responsive">
+        <div className="grid gap-8 md:grid-cols-3">
+          {/* Información del restaurante */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold text-[#6d5334]">
+              {config.restaurantName}
+            </h3>
+            <div className="space-y-3 text-sm text-[#7d6446]">
+              {config.formattedAddress && (
+                <div className="flex items-start gap-2">
+                  <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#b37944]" />
+                  <span>{config.formattedAddress}</span>
+                </div>
+              )}
+              {config.phone && (
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 flex-shrink-0 text-[#b37944]" />
+                  <a
+                    href={`tel:${config.phone}`}
+                    className="transition hover:text-[#b37944]"
+                  >
+                    {config.phone}
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
-          <p>&copy; {year} {config.restaurantName}. Hecho para saborear buenos momentos.</p>
+
+          {/* Enlaces rápidos */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold text-[#6d5334]">Enlaces</h3>
+            <div className="flex flex-col gap-3">
+              <HoursModal hours={hours} restaurantName={config.restaurantName} />
+              {config.whatsappLink && (
+                <a
+                  href={config.whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-[#7d6446] transition hover:text-[#b37944]"
+                >
+                  <Phone className="h-4 w-4" />
+                  <span className="font-medium">WhatsApp</span>
+                </a>
+              )}
+            </div>
+          </div>
+
+          {/* Redes sociales */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold text-[#6d5334]">Síguenos</h3>
+            <div className="flex gap-3">
+              {socials.map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  className="flex h-12 w-12 items-center justify-center rounded-full border border-[#e7dccd] bg-white text-[#7d6446] shadow-sm transition hover:scale-110 hover:border-[#d3a06f] hover:text-[#b37944] hover:shadow-md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                >
+                  <Icon className="h-5 w-5" aria-hidden />
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Copyright */}
+        <div className="mt-8 border-t border-[#efe3d2] pt-6 text-center text-sm text-[#9a8263]">
+          <p>
+            &copy; {year} {config.restaurantName}. Hecho para saborear buenos
+            momentos.
+          </p>
         </div>
       </div>
     </footer>
