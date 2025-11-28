@@ -95,7 +95,7 @@ export function ProductDetailDialog({ item, onClose, onAddToCart }: ProductDetai
               </p>
             )}
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div className="flex flex-col">
               <span className="text-sm text-[#9a8263]">
                 Subtotal
