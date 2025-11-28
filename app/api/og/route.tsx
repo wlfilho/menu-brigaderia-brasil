@@ -3,7 +3,7 @@ import { getSiteConfig } from "@/lib/config-service";
 
 export const runtime = "edge";
 
-function buildLogoUrl(configLogoUrl: string): string | null {
+function buildLogoUrl(configLogoUrl: string, requestUrl?: string): string | null {
     if (!configLogoUrl || !configLogoUrl.trim()) {
         return null;
     }
@@ -15,66 +15,82 @@ function buildLogoUrl(configLogoUrl: string): string | null {
         return trimmed;
     }
 
-    // Se é um caminho relativo, constrói a URL completa
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL 
-        || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+    // Tenta usar a URL da requisição atual primeiro (mais confiável)
+    let baseUrl: string | undefined;
+    
+    if (requestUrl) {
+        try {
+            const url = new URL(requestUrl);
+            baseUrl = `${url.protocol}//${url.host}`;
+        } catch (error) {
+            console.warn(`[OG] Failed to parse request URL: ${requestUrl}`, error);
+        }
+    }
+    
+    // Fallback para variáveis de ambiente ou valores padrão
+    if (!baseUrl) {
+        baseUrl = process.env.NEXT_PUBLIC_SITE_URL 
+            || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+    }
     
     // Garante que o caminho começa com /
     const path = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
     
-    return `${baseUrl}${path}`;
+    const fullUrl = `${baseUrl}${path}`;
+    console.log(`[OG] Built logo URL: ${fullUrl} (from base: ${baseUrl}, path: ${path})`);
+    
+    return fullUrl;
 }
 
-async function fetchImageAsDataUrl(logoUrl: string): Promise<string | null> {
+async function verifyImageUrl(logoUrl: string): Promise<boolean> {
     try {
         const response = await fetch(logoUrl, {
+            method: "HEAD",
             headers: {
                 "User-Agent": "Mozilla/5.0 (compatible; Next.js OG Image)",
             },
         });
-        
-        if (!response.ok) {
-            console.warn(`Failed to fetch logo image: ${response.status} ${response.statusText}`);
-            return null;
-        }
-        
-        const arrayBuffer = await response.arrayBuffer();
-        const contentType = response.headers.get("content-type") || "image/png";
-        const uint8Array = new Uint8Array(arrayBuffer);
-        
-        // Converter Uint8Array para base64 no Edge Runtime
-        let binary = "";
-        for (let i = 0; i < uint8Array.length; i++) {
-            binary += String.fromCharCode(uint8Array[i]);
-        }
-        const base64 = btoa(binary);
-        
-        return `data:${contentType};base64,${base64}`;
+        return response.ok;
     } catch (error) {
-        console.warn("Error fetching logo image:", error);
-        return null;
+        console.warn(`[OG] Error verifying image URL ${logoUrl}:`, error);
+        return false;
     }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
         const config = await getSiteConfig();
         
-        // Construir URL absoluta do logo
-        const logoUrl = buildLogoUrl(config.logoUrl);
+        // Obter a URL da requisição atual para construir URLs relativas corretamente
+        const requestUrl = request.url;
+        console.log(`[OG] Generating OG image for: ${requestUrl}`);
+        console.log(`[OG] Logo URL from config: ${config.logoUrl}`);
         
-        // Buscar a imagem e converter para data URL
-        // Isso garante que a imagem seja carregada corretamente no Edge Runtime
+        // Construir URL absoluta do logo usando a URL da requisição
+        const logoUrl = buildLogoUrl(config.logoUrl, requestUrl);
+        console.log(`[OG] Built logo URL: ${logoUrl}`);
+        
+        // O ImageResponse do Next.js no Edge Runtime funciona melhor com URLs absolutas
+        // Ele faz o fetch internamente quando necessário
         let logoSrc: string | null = null;
         if (logoUrl) {
-            const dataUrl = await fetchImageAsDataUrl(logoUrl);
-            if (dataUrl) {
-                logoSrc = dataUrl;
+            // Sempre usa a URL - o ImageResponse vai fazer o fetch internamente
+            // A verificação é apenas para logs/debug
+            const isAccessible = await verifyImageUrl(logoUrl);
+            logoSrc = logoUrl;
+            
+            if (isAccessible) {
+                console.log(`[OG] Logo URL verified and ready: ${logoUrl}`);
             } else {
-                // Se falhar ao buscar, tenta usar a URL diretamente como fallback
-                logoSrc = logoUrl;
+                console.warn(`[OG] Logo URL verification failed, but using anyway: ${logoUrl}`);
+                console.warn(`[OG] ImageResponse will attempt to fetch the image internally`);
             }
+        } else {
+            console.warn(`[OG] No logo URL available from config`);
         }
+        
+        // Log final para debug
+        console.log(`[OG] Final logoSrc value: ${logoSrc}`);
 
         return new ImageResponse(
             (
@@ -100,10 +116,10 @@ export async function GET() {
                             gap: "20px",
                         }}
                     >
-                        {logoSrc && (
+                        {logoSrc ? (
                             <img
                                 src={logoSrc}
-                                alt={config.restaurantName}
+                                alt={config.restaurantName || "Logo"}
                                 width={200}
                                 height={200}
                                 style={{
@@ -113,7 +129,7 @@ export async function GET() {
                                     padding: "20px",
                                 }}
                             />
-                        )}
+                        ) : null}
                         <div
                             style={{
                                 fontSize: 60,
