@@ -9,15 +9,18 @@ import { SearchBarHeader } from "@/components/search/search-bar-header";
 import { useSearch } from "@/components/search/search-provider";
 import { getImageSrc } from "@/lib/utils";
 import type { SiteConfigWithComputed } from "@/types/config";
+import type { BusinessHours } from "@/types/hours";
+import { OpenStatusBadge } from "@/components/open-status-badge";
 
 import { CategoryTabs } from "@/components/menu/category-tabs";
 
 interface SiteHeaderProps {
   config: SiteConfigWithComputed;
   categories?: string[];
+  hours?: BusinessHours[];
 }
 
-export function SiteHeader({ config, categories = [] }: SiteHeaderProps) {
+export function SiteHeader({ config, categories = [], hours = [] }: SiteHeaderProps) {
   const whatsappLink = config.whatsappLink;
   const { toggleSearch, activeCategory, setActiveCategory } = useSearch();
 
@@ -40,10 +43,7 @@ export function SiteHeader({ config, categories = [] }: SiteHeaderProps) {
       <div className="z-40 bg-[#fdf7ef]">
         <div className="border-b border-[#f0e3d0] bg-[#f4e8d8]">
           <div className="container-responsive flex items-center justify-between py-2 text-sm text-[#7d6446]">
-            <div className="flex items-center gap-2 rounded-full bg-[#e9dcc9] px-3 py-1 text-xs font-semibold text-[#4f3b27]">
-              <span className="h-2 w-2 rounded-full bg-[#33c24d]" aria-hidden />
-              Abierto hasta las 23h
-            </div>
+            <OpenStatusBadge hours={hours} />
             <div className="flex items-center gap-2">
               {whatsappLink ? (
                 <a

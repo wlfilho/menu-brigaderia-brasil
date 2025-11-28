@@ -4,6 +4,7 @@ import { Clock, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import type { BusinessHours } from "@/types/hours";
+import { getCurrentDay, getNextOpeningDay, isOpenNow } from "@/lib/hours-utils";
 
 interface HoursModalProps {
     hours: BusinessHours[];
@@ -12,17 +13,23 @@ interface HoursModalProps {
 
 export function HoursModal({ hours, restaurantName }: HoursModalProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [currentDay, setCurrentDay] = useState("");
+    const [nextOpenDay, setNextOpenDay] = useState<string | null>(null);
+    const [isCurrentlyOpen, setIsCurrentlyOpen] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = "hidden";
+            setCurrentDay(getCurrentDay());
+            setNextOpenDay(getNextOpeningDay(hours));
+            setIsCurrentlyOpen(isOpenNow(hours));
         } else {
             document.body.style.overflow = "";
         }
         return () => {
             document.body.style.overflow = "";
         };
-    }, [isOpen]);
+    }, [isOpen, hours]);
 
     const dayNames: Record<string, string> = {
         domingo: "Domingo",
@@ -32,6 +39,45 @@ export function HoursModal({ hours, restaurantName }: HoursModalProps) {
         jueves: "Jueves",
         viernes: "Viernes",
         sábado: "Sábado",
+    };
+
+    const isHighlighted = (day: string) => {
+        const normalizedDay = day.toLowerCase();
+        const normalizedCurrent = currentDay.toLowerCase();
+        const normalizedNext = nextOpenDay?.toLowerCase();
+
+        // Destacar o dia atual se estiver aberto
+        if (normalizedDay === normalizedCurrent && isCurrentlyOpen) {
+            return "current";
+        }
+
+        // Destacar o próximo dia de abertura se estiver fechado
+        if (!isCurrentlyOpen) {
+            if (nextOpenDay === "hoy" && normalizedDay === normalizedCurrent) {
+                return "next";
+            }
+            if (nextOpenDay === "mañana") {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowDay = [
+                    "domingo",
+                    "lunes",
+                    "martes",
+                    "miércoles",
+                    "jueves",
+                    "viernes",
+                    "sábado",
+                ][tomorrow.getDay()];
+                if (normalizedDay === tomorrowDay) {
+                    return "next";
+                }
+            }
+            if (normalizedDay === normalizedNext) {
+                return "next";
+            }
+        }
+
+        return null;
     };
 
     return (
@@ -72,25 +118,64 @@ export function HoursModal({ hours, restaurantName }: HoursModalProps) {
                         </div>
 
                         <div className="space-y-3">
-                            {hours.map((hour) => (
-                                <div
-                                    key={hour.day}
-                                    className="flex items-center justify-between rounded-lg border border-[#efe3d2] bg-[#fdfbf8] px-4 py-3 transition hover:border-[#d3a06f]"
-                                >
-                                    <span className="font-medium capitalize text-[#6d5334]">
-                                        {dayNames[hour.day.toLowerCase()] || hour.day}
-                                    </span>
-                                    {hour.isOpen ? (
-                                        <span className="text-sm text-[#7d6446]">
-                                            {hour.openTime} - {hour.closeTime}
-                                        </span>
-                                    ) : (
-                                        <span className="text-sm font-medium text-red-600">
-                                            Cerrado
-                                        </span>
-                                    )}
-                                </div>
-                            ))}
+                            {hours.map((hour) => {
+                                const highlight = isHighlighted(hour.day);
+                                const isCurrent = highlight === "current";
+                                const isNext = highlight === "next";
+
+                                return (
+                                    <div
+                                        key={hour.day}
+                                        className={`flex items-center justify-between rounded-lg border px-4 py-3 transition ${isCurrent
+                                                ? "border-green-300 bg-green-50"
+                                                : isNext
+                                                    ? "border-amber-300 bg-amber-50"
+                                                    : "border-[#efe3d2] bg-[#fdfbf8] hover:border-[#d3a06f]"
+                                            }`}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            {isCurrent && (
+                                                <span className="h-2 w-2 rounded-full bg-green-500" />
+                                            )}
+                                            {isNext && (
+                                                <span className="h-2 w-2 rounded-full bg-amber-500" />
+                                            )}
+                                            <span
+                                                className={`font-medium capitalize ${isCurrent
+                                                        ? "text-green-800"
+                                                        : isNext
+                                                            ? "text-amber-800"
+                                                            : "text-[#6d5334]"
+                                                    }`}
+                                            >
+                                                {dayNames[hour.day.toLowerCase()] || hour.day}
+                                                {isCurrent && (
+                                                    <span className="ml-2 text-xs">(Hoy)</span>
+                                                )}
+                                                {isNext && !isCurrent && (
+                                                    <span className="ml-2 text-xs">(Próxima apertura)</span>
+                                                )}
+                                            </span>
+                                        </div>
+                                        {hour.isOpen ? (
+                                            <span
+                                                className={`text-sm ${isCurrent
+                                                        ? "font-semibold text-green-700"
+                                                        : isNext
+                                                            ? "font-semibold text-amber-700"
+                                                            : "text-[#7d6446]"
+                                                    }`}
+                                            >
+                                                {hour.openTime} - {hour.closeTime}
+                                            </span>
+                                        ) : (
+                                            <span className="text-sm font-medium text-red-600">
+                                                Cerrado
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
 
                         {hours.length === 0 && (

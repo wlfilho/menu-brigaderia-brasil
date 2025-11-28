@@ -4,18 +4,23 @@ import { MenuScreen } from "@/components/menu/menu-screen";
 import { SearchProvider } from "@/components/search/search-provider";
 import { getSiteConfig } from "@/lib/config-service";
 import { getMenuData } from "@/lib/menu-service";
+import { getBusinessHours } from "@/lib/hours-service";
 
 import { StickyCartBar } from "@/components/cart/sticky-cart-bar";
 
 export default async function HomePage() {
-  const [data, config] = await Promise.all([getMenuData(), getSiteConfig()]);
+  const [data, config, hours] = await Promise.all([
+    getMenuData(),
+    getSiteConfig(),
+    getBusinessHours(),
+  ]);
 
   const categories = data.categories.map((category) => category.name);
 
   return (
     <SearchProvider>
       <div className="flex min-h-screen flex-col bg-[#f9f3ea] pb-20">
-        <SiteHeader config={config} categories={categories} />
+        <SiteHeader config={config} categories={categories} hours={hours} />
         <main className="flex-1 py-10 sm:py-16">
           <div className="container-responsive">
             <MenuScreen data={data} config={config} />
