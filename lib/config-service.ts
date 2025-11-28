@@ -5,7 +5,7 @@ import { parseCsvLine, splitCsvRows } from "@/lib/csv";
 import type { SiteConfig, SiteConfigWithComputed } from "@/types/config";
 
 const DEFAULT_SHEET_ID = "1HSW04exyEjR9HdYQN5njz0k6Gssxb48l_7HWiPyXw6s";
-const DEFAULT_CONFIG_GID = "1";
+const DEFAULT_CONFIG_GID = "1914842493";
 const DEFAULT_FEATURE_CONFIG_GID = "1043160202";
 
 // Try to extract sheet ID from published URL if available
