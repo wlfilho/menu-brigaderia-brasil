@@ -27,10 +27,6 @@ export async function generateMetadata(): Promise<Metadata> {
     ? `https://${process.env.VERCEL_URL}`
     : "http://localhost:3000";
 
-  // Use logo from config or fallback
-  const ogImage = config.logoUrl || "/images/logo-brigaderia.png";
-  const fullOgImageUrl = ogImage.startsWith("http") ? ogImage : `${baseUrl}${ogImage}`;
-
   return {
     metadataBase: new URL(baseUrl),
     title: {
@@ -57,7 +53,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: restaurantName,
       images: [
         {
-          url: fullOgImageUrl,
+          url: "/api/og",
           width: 1200,
           height: 630,
           alt: `Menú digital ${restaurantName}`,
@@ -68,7 +64,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: restaurantName,
       description: defaultDescription,
-      images: [fullOgImageUrl],
+      images: ["/api/og"],
     },
     icons: {
       icon: config.logoUrl || "/favicon.ico",
