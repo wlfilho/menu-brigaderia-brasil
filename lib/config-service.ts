@@ -176,6 +176,7 @@ function buildConfig(csv: string): SiteConfig {
     instagram: getValue(["instagram", "ig"], ""),
     facebook: getValue(["facebook", "fb"], ""),
     logoUrl: getValue(["logo", "logourl", "logo url", "imagem"], ""),
+    email: getValue(["email", "e-mail"], ""),
     formularioCupom: false, // Será sobrescrito pela feature config se disponível
   };
 

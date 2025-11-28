@@ -10,6 +10,7 @@ export type SiteConfig = {
   instagram: string;
   facebook: string;
   logoUrl: string;
+  email: string;
   formularioCupom: boolean;
 };
 

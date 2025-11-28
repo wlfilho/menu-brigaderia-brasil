@@ -6,6 +6,7 @@ Endereço,"Rua das Flores, 123"
 Bairro,Vila Gourmet
 Cidade,São Paulo
 Estado,SP
+Email,contato@restaurantelilica.com.br
 Instagram,https://instagram.com/restaurante.lilica
 Facebook,https://facebook.com/restaurante.lilica
 Logo,`;
