@@ -139,23 +139,26 @@ function normalizeHeader(value: string) {
 }
 
 function buildConfig(csv: string): SiteConfig {
-  const [headerLineRaw, ...rowLines] = splitCsvRows(csv).filter((line) =>
-    line.trim().length > 0,
-  );
-  const headerLine = headerLineRaw?.replace(/^\ufeff/, "");
+  const rows = splitCsvRows(csv).filter((line) => line.trim().length > 0);
 
-  if (!headerLine || !rowLines.length) {
+  if (!rows.length) {
     throw new Error("Config CSV without content");
   }
 
-  const headers = parseCsvLine(headerLine).map(normalizeHeader);
-  const values = parseCsvLine(rowLines[0] ?? "");
+  // Parse as Key-Value pairs (Vertical format)
+  const configMap = new Map<string, string>();
+
+  for (const row of rows) {
+    const [key, value] = parseCsvLine(row);
+    if (key) {
+      configMap.set(normalizeHeader(key), value?.trim() ?? "");
+    }
+  }
 
   const getValue = (candidates: string[], fallback = "") => {
     for (const candidate of candidates) {
-      const index = headers.indexOf(candidate);
-      if (index >= 0) {
-        return values[index]?.trim() ?? fallback;
+      if (configMap.has(candidate)) {
+        return configMap.get(candidate) ?? fallback;
       }
     }
     return fallback;
