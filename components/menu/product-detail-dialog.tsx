@@ -51,7 +51,7 @@ export function ProductDetailDialog({ item, onClose, onAddToCart }: ProductDetai
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-4 pb-6 pt-10 sm:items-center sm:pb-16"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       role="dialog"
       aria-modal="true"
       aria-label={`Detalles del producto ${item.name}`}
@@ -59,7 +59,7 @@ export function ProductDetailDialog({ item, onClose, onAddToCart }: ProductDetai
     >
       <div
         className={cn(
-          "relative w-full max-w-xl overflow-hidden rounded-3xl border border-[#e7dccd] bg-[#fdf7ef] shadow-2xl transition-transform",
+          "relative flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl border border-[#e7dccd] bg-[#fdf7ef] shadow-2xl transition-transform",
         )}
         onClick={(event) => event.stopPropagation()}
       >
@@ -71,7 +71,7 @@ export function ProductDetailDialog({ item, onClose, onAddToCart }: ProductDetai
         >
           <X className="h-5 w-5" aria-hidden />
         </button>
-        <div className="relative h-72 w-full overflow-hidden">
+        <div className="relative h-56 w-full shrink-0 overflow-hidden sm:h-72">
           <Image
             src={imageSrc}
             alt={item.name}
@@ -81,7 +81,7 @@ export function ProductDetailDialog({ item, onClose, onAddToCart }: ProductDetai
             priority
           />
         </div>
-        <div className="flex flex-col gap-5 p-6">
+        <div className="flex flex-col gap-5 overflow-y-auto p-6">
           <div className="flex flex-col gap-2">
             <span className="inline-flex w-fit items-center rounded-full bg-[#f0e1cb] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#b08a5e]">
               {item.category}

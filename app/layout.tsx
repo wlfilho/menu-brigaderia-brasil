@@ -23,9 +23,22 @@ const defaultDescription =
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteConfig();
   const restaurantName = config.restaurantName || "Menú";
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
+  
+  // Construir a URL base corretamente
+  let baseUrl: string;
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  } else if (process.env.VERCEL_URL) {
+    // VERCEL_URL já inclui o protocolo quando disponível, mas vamos garantir
+    baseUrl = process.env.VERCEL_URL.startsWith("http")
+      ? process.env.VERCEL_URL
+      : `https://${process.env.VERCEL_URL}`;
+  } else {
+    baseUrl = "http://localhost:3000";
+  }
+  
+  // Garantir que não termine com /
+  baseUrl = baseUrl.replace(/\/$/, "");
 
   return {
     metadataBase: new URL(baseUrl),
@@ -53,7 +66,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: restaurantName,
       images: [
         {
-          url: "/api/og",
+          url: `${baseUrl}/api/og`,
           width: 1200,
           height: 630,
           alt: `Menú digital ${restaurantName}`,
@@ -64,7 +77,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: restaurantName,
       description: defaultDescription,
-      images: ["/api/og"],
+      images: [`${baseUrl}/api/og`],
     },
     icons: {
       icon: config.logoUrl || "/favicon.ico",
