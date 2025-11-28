@@ -10,26 +10,15 @@ Adicione as seguintes variáveis de ambiente no painel do Vercel (Settings > Env
 
 ## 2. Configuração das Abas
 
-Identifiquei sua aba de configurações pelo link que você enviou.
-
-### Aba de Configurações (Identificada)
 | Key | Value |
 | --- | --- |
 | `NEXT_PUBLIC_CONFIG_GID` | `1914842493` |
-
-### Aba de Features (Recursos/Cupom)
-*Ainda falta o ID desta aba. Se você tiver uma aba "Features" ou "Recursos" na planilha, clique nela e copie o número `gid` da URL.*
-
-| Key | Value |
-| --- | --- |
 | `NEXT_PUBLIC_FEATURE_CONFIG_GID` | `SEU_GID_AQUI` (Ex: `987654`) |
 
-## 3. Captura de Leads (Para o Cupom funcionar)
+## 3. Captura de Leads (Webhook N8N)
 
-Extraí o ID da sua planilha a partir do link de edição que você enviou.
+Para o formulário de cupom funcionar e enviar os dados para o seu fluxo no N8N.
 
 | Key | Value |
 | --- | --- |
-| `GOOGLE_SHEETS_ID` | `1UbR70LJZ75Ei3_j1x--AGB7haZfChAMKXJVCh9vBP8k` |
-| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | O e-mail da conta de serviço (ex: `menu-digital@...iam.gserviceaccount.com`) |
-| `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` | A chave privada da conta de serviço (começa com `-----BEGIN PRIVATE KEY-----`) |
+| `N8N_WEBHOOK_URL` | A URL do seu webhook no N8N (ex: `https://seu-n8n.com/webhook/...`) |

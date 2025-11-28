@@ -1,45 +1,12 @@
 import { NextResponse } from "next/server";
-import { google } from "googleapis";
 
-const SHEET_ID =
-  process.env.GOOGLE_SHEETS_ID ??
-  process.env.NEXT_PUBLIC_SHEET_ID ??
-  process.env.SHEET_ID ??
-  "";
-
-const LEADS_RANGE = process.env.GOOGLE_LEADS_RANGE ?? "Leads!A:D";
-const SERVICE_ACCOUNT_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ?? "";
-const SERVICE_ACCOUNT_KEY = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY ?? "";
-
-if (!SHEET_ID) {
-  console.warn("GOOGLE_SHEETS_ID or NEXT_PUBLIC_SHEET_ID is not configured for leads endpoint.");
-}
-
-let sheetsClient: ReturnType<typeof google.sheets> | null = null;
-
-async function getSheetsClient() {
-  if (!SERVICE_ACCOUNT_EMAIL || !SERVICE_ACCOUNT_KEY) {
-    throw new Error("Missing Google service account credentials");
-  }
-
-  if (sheetsClient) {
-    return sheetsClient;
-  }
-
-  const auth = new google.auth.JWT({
-    email: SERVICE_ACCOUNT_EMAIL,
-    key: SERVICE_ACCOUNT_KEY.replace(/\\n/g, "\n"),
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  });
-
-  sheetsClient = google.sheets({ version: "v4", auth });
-  return sheetsClient;
-}
+const WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
 
 export async function POST(request: Request) {
-  if (!SHEET_ID) {
+  if (!WEBHOOK_URL) {
+    console.error("N8N_WEBHOOK_URL is not configured");
     return NextResponse.json(
-      { message: "Planilha não configurada para receber leads." },
+      { message: "Erro de configuração no servidor." },
       { status: 500 },
     );
   }
@@ -57,19 +24,28 @@ export async function POST(request: Request) {
       );
     }
 
-    const sheets = await getSheetsClient();
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: SHEET_ID,
-      range: LEADS_RANGE,
-      valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values: [[new Date().toISOString(), name, email, whatsapp]],
+    // Enviar para o N8N
+    const response = await fetch(WEBHOOK_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        name,
+        email,
+        whatsapp,
+        date: new Date().toISOString(),
+        source: "menu-digital",
+      }),
     });
 
-    return NextResponse.json({ message: "Lead cadastrado com sucesso" });
+    if (!response.ok) {
+      throw new Error(`N8N webhook failed with status ${response.status}`);
+    }
+
+    return NextResponse.json({ message: "Lead enviado com sucesso" });
   } catch (error) {
-    console.error("Failed to append lead", error);
+    console.error("Failed to send lead to N8N", error);
     return NextResponse.json(
       { message: "Não foi possível cadastrar agora. Tente novamente." },
       { status: 500 },
